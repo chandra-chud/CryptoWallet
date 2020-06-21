@@ -1,7 +1,12 @@
 const sha256 = require('sha256');
 const currentUrl = process.argv[3];
-var uuid = require('uuid');
+const Block = require('./block');
+const Wallet = require('./wallet');
 const {DIFFICULTY} = require('../default.js');
+const Transaction = require('./transaction');
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
+
 
 class Blockchain {
     constructor() {
@@ -9,41 +14,85 @@ class Blockchain {
         this.pendingTransactions = [];
         this.currentNodeUrl = currentUrl;
         this.networkNodes = [];
+        this.users = [];
 
         this.createNewBlock(100, '0', '0');
     }
 
     createNewBlock(nonce, previousBlockHash, hash) {
-        const newBlock = {
-            index: this.chain.length + 1,
-            timestamp: Date.now(),
-            transactions: this.pendingTransactions,
-            nonce: nonce,
-            hash: hash,
-            previousBlockHash: previousBlockHash
-        };
-
+        const newBlock = new Block(this.chain.length+1, Date.now(), this.pendingTransactions, nonce, hash, previousBlockHash);
         this.pendingTransactions = [];
+
         this.chain.push(newBlock);
         return newBlock;
+    }
+
+    createNewWallet(name){
+        const newWallet = new Wallet(name);
+        const checkUserList = this.users.find(user => user.name === name);
+
+        if(checkUserList != null){
+            return null;
+        } else {
+            return newWallet;
+        }
     }
 
     getLastBlock() {
         return this.chain[this.chain.length - 1];
     }
 
-    createNewTransaction(amount, sender, recipient) {
-        const newTransaction = {
-            amount: amount,
-            sender: sender,
-            recipient: recipient,
-            transactionId:uuid.v1().split('-').join('')
-        };
+    updateBalanceOfUser (targetKey) {
+        var addressTransactions = this.chain[this.chain.length - 1].transactions;
+        
+        let balance = 0;
+        addressTransactions.forEach(transaction => {
+            if (transaction.recipient === targetKey) balance += transaction.amount;
+            else if (transaction.sender === targetKey) balance -= transaction.amount;
+        });
 
-        return newTransaction;
+        const currentUser = this.users.find(user => user.publicKey === targetKey);
+        const currentBalance = currentUser.balance + balance;
+
+        return currentBalance;
+    };
+
+    createNewTransaction(amount, senderKey, recipientKey) {
+        var newTransaction;
+        const senderExists = this.users.find(user => user.publicKey === senderKey);
+        const recipientExists = this.users.find(user => user.publicKey === recipientKey);                
+
+        if(senderKey == '00'){
+            newTransaction = new Transaction(amount, senderKey, recipientKey);
+        } else if(senderExists && recipientExists){
+            const currentBalance = senderExists.balance;
+
+            if(amount > currentBalance){
+                newTransaction = {
+                    amount: -1,
+                    note: 'Insufficient Balance'
+                };
+            } else {
+                newTransaction = new Transaction(amount, senderKey, recipientKey);
+                const myKey = ec.keyFromPrivate(senderExists.privateKey);
+                newTransaction.signTransaction(myKey);
+            }                      
+            
+        } else {
+            newTransaction = {
+                amount: -2,
+                note: 'The mentioned user keys dont exist create new ones'
+            };
+        }
+
+        return newTransaction;    
     }
 
     addTransactionToPendingTransactions(transactionObj) {
+        if(!transactionObj.isValid()){
+            throw new Error('Transaction InValid');
+        }
+
         this.pendingTransactions.push(transactionObj);
         return this.getLastBlock()['index'] + 1;
     } 
@@ -86,6 +135,7 @@ class Blockchain {
     
         const genesisBlock = blockchain[0];
         const correctNonce = genesisBlock['nonce'] === 100;
+
         const correctPreviousBlockHash = genesisBlock['previousBlockHash'] === '0';
         const correctHash = genesisBlock['hash'] === '0';
         const correctTransactions = genesisBlock['transactions'].length === 0;
@@ -126,31 +176,6 @@ class Blockchain {
             block: correctBlock
         };
     };
-    
-    
-    getAddressData (address) {
-        const addressTransactions = [];
-        this.chain.forEach(block => {
-            block.transactions.forEach(transaction => {
-                if(transaction.sender === address || transaction.recipient === address) {
-                    addressTransactions.push(transaction);
-                };
-            });
-        });
-    
-        let balance = 0;
-        addressTransactions.forEach(transaction => {
-            console.log(transaction);
-            if (transaction.recipient === address) balance += transaction.amount;
-            else if (transaction.sender === address) balance -= transaction.amount;
-        });
-    
-        return {
-            addressTransactions: addressTransactions,
-            addressBalance: balance
-        };
-    };
-
 };
 
 module.exports = Blockchain;
