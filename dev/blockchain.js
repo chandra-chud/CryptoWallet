@@ -15,7 +15,8 @@ class Blockchain {
         this.currentNodeUrl = currentUrl;
         this.networkNodes = [];
         this.users = [];
-
+        
+        // the genesis block of the blockchain
         this.createNewBlock(100, '0', '0');
     }
 
@@ -37,11 +38,13 @@ class Blockchain {
             return newWallet;
         }
     }
-
+    
+    //returns the last block in the blockchain
     getLastBlock() {
         return this.chain[this.chain.length - 1];
     }
 
+    //returns the balance of the user with targetkey equal to the given value
     updateBalanceOfUser (targetKey) {
         var addressTransactions = this.chain[this.chain.length - 1].transactions;
         
@@ -57,6 +60,7 @@ class Blockchain {
         return currentBalance;
     };
 
+    //creates new transaction by checking the balance
     createNewTransaction(amount, senderKey, recipientKey) {
         var newTransaction;
         const senderExists = this.users.find(user => user.publicKey === senderKey);
@@ -88,6 +92,7 @@ class Blockchain {
         return newTransaction;    
     }
 
+    //checks the validity of the transaction and adds it to the pending transactions array
     addTransactionToPendingTransactions(transactionObj) {
         if(!transactionObj.isValid()){
             throw new Error('Transaction InValid');
@@ -97,6 +102,7 @@ class Blockchain {
         return this.getLastBlock()['index'] + 1;
     } 
 
+    
     hashBlock(previousBlockHash, currentBlockData, nonce) {
         const dataAsString = previousBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
         const hash = sha256(dataAsString);
@@ -104,6 +110,7 @@ class Blockchain {
     };
 
     
+    //used to calculate nonce of the block using default difficulty levels
     proofOfWork(previousBlockHash, currentBlockData) {
         let nonce = 0;
         let hash = this.hashBlock(previousBlockHash, currentBlockData, nonce);
@@ -117,7 +124,7 @@ class Blockchain {
     };
 
 
-
+    //checks if the chain is valid or anything is been tampered with
     chainIsValid(blockchain) {
         let validChain = true;
     

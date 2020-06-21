@@ -26,11 +26,14 @@ app.get('/all-users', (req, res) => {
     res.send(bitcoin.users);
 });
 
+//update user data of the block
 app.post('/new-user-data', (req, res) => {
 	bitcoin.users = req.body;
 	res.json({note : 'user data changed'});	
 });
 
+
+//on addition of user data
 app.get('/users-change', (req, res) => {
 	const requestPromises = [];
 	
@@ -220,6 +223,7 @@ app.post('/mine', (req, res) => {
 });
 
 
+//to receive a new block
 app.post('/receive-new-block', function(req, res) {
 	const newBlock = req.body.newBlock;
 	const lastBlock = bitcoin.getLastBlock();

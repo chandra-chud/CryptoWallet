@@ -4,7 +4,6 @@ const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
 
-
 class Transaction {
     constructor(amount, senderKey, recipientKey){
         this.amount = amount,
@@ -20,6 +19,7 @@ class Transaction {
         return hash;
     }
 
+    //sign transaction with the privatekey of user
     signTransaction(signingKey) {        
         if (signingKey.getPublic('hex') !== this.sender) {
           throw new Error('You cannot sign transactions for other wallets!');
@@ -31,6 +31,7 @@ class Transaction {
         this.signature = sig.toDER('hex');
     }
 
+    //check if a particular transaction is valid
     isValid(){
         if(this.sender == '00') 
         return true;
@@ -45,4 +46,4 @@ class Transaction {
     }
 };
 
-module.exports = Transaction
+module.exports = Transaction;
