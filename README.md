@@ -37,7 +37,6 @@ Check if all node servers are running in the terminal
 - **Adding Transactions**: In the `/transaction/broadcast` endpoint enter the amount and sender,recipients public keys
 - **Mine Blocks** : After adding transactions we need to mine them using`/mine` to validate them for this you need to provide one of the users as a miner and provide his public keys in minerId
 -  **Consensus** : When you add a new node  and it is out of sync with the blockchain you need to perform consensus using `/consensus` to get it into sync
--  
 
 
 
