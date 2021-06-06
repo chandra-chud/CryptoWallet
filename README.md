@@ -1,5 +1,5 @@
 # CryptoWallet
-A digital wallet implemented in Javascript using Blockchain
+A digital wallet implemented in JavaScript using Blockchain
 
 ## Technologies Used
 
@@ -9,7 +9,7 @@ A digital wallet implemented in Javascript using Blockchain
 
  ## Features
  
- - Block-chain implementation using javascript
+ - Block-chain implementation using JavaScript
  - Data hashed and stored in a block
  - Nonce aka Proof Of Work
  - Multiple network nodes in the blockchain, with synchronization
