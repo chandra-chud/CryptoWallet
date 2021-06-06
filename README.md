@@ -1,12 +1,12 @@
 # CryptoWallet
 A digital wallet implemented in Javascript using Blockchain
 
-# Technologies Used
+## Technologies Used
 
  - NodeJS
  - ExpressJS
  - JavaScript
- 
+
  ## Features
  
  - Block-chain implementation using javascript
@@ -16,8 +16,19 @@ A digital wallet implemented in Javascript using Blockchain
  - Wallet for Each user with private and public Key
  - Reward transaction for miners
 
-# How to run use
-First clone the repo in your computer
-Then start each one of the 5 nodes by running npm start node_i(i represent the node number) in different windows of the terminal
+ ## How To Use
+- Now run the following commands 
+```
+   npm cache clean
+   npm install
+```
 
+- Now, you should be able to see the node modules folder with all dependencies installed.
+- Run each one of the network nodes in different terminal windows simultaneously using the command
+```
+   npm run node_i (i => 1..5)
+```
+- Import the json file for postman into your Postman Desktop App this contains API preadded with body format to create the blockchain
+
+## Application User Manual
 
