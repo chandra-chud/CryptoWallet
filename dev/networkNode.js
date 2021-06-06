@@ -1,10 +1,10 @@
 var express = require('express');
 var app = express();
-var bodyParser = require('body-parser');
+// var express = require('body-parser');
 var Blockchain = require('./blockchain');
 var Block = require('./block');
 var uuid = require('uuid');
-var port = process.argv[2];
+var port = process.argv[2];	
 var nodeAddress = uuid.v1().split('-').join('');
 var bitcoin = new Blockchain();
 var Transaction = require('./transaction');
@@ -12,21 +12,27 @@ var rp = require('request-promise');
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb',extended: false }));
+app.use(express.json({limit: '50mb'}));
+// app.use(express.urlencoded({limit: '50mb',extended: false }));
 
+
+//Int-API - Internal API called internally
+//Ex-API - External API called by postman
 
 //get the blockchain
+//Ex-API
 app.get('/blockchain', (req, res) => {
     res.send(bitcoin);
 });
 
 //get all users
+//Ex-API
 app.get('/all-users', (req, res) => {
     res.send(bitcoin.users);
 });
 
 //update user data of the block
+//Ex-API
 app.post('/new-user-data', (req, res) => {
 	bitcoin.users = req.body;
 	res.json({note : 'user data changed'});	
@@ -34,6 +40,8 @@ app.post('/new-user-data', (req, res) => {
 
 
 //on addition of user data
+//broadcast those changes to all node urls
+//Int-API
 app.get('/users-change', (req, res) => {
 	const requestPromises = [];
 	
@@ -51,14 +59,15 @@ app.get('/users-change', (req, res) => {
 	Promise.all(requestPromises)
 	.then(data => {
 		res.json({ note: 'User data changed and broadcast successfully.' });	
-	});
-	
+	});	
 });
 
-//to create a new transaction and get the public and private keys
+//to create a new user and get the public and private keys
+//Ex-API
 app.post('/new-user', (req, res) => {
 	const newUser = bitcoin.createNewWallet(req.body.name);
-	
+	console.log(req.body);
+
 	if(newUser){
 		bitcoin.users.push(newUser);
 
@@ -79,7 +88,6 @@ app.post('/new-user', (req, res) => {
 				data: newUser
 			});
 		});
-
 	} else {
 		res.json({
 			note:'User already exists choose a different name',
@@ -90,18 +98,21 @@ app.post('/new-user', (req, res) => {
 
 
 //to add a transaction to the current block
+//Ex-API
 app.post('/transaction', (req, res) => {
     const newTransaction = bitcoin.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
 	const blockIndex = bitcoin.addTransactionToPendingTransactions(newTransaction);
+	// console.log(req.body);
 
     res.json({ note: `Transaction will be added in block ${blockIndex}.` });
 });
 
 
 //to add a transaction to the all blocks in the network
+//Int-API
 app.post('/transaction/broadcast', function(req, res) {
 	const newTransaction = bitcoin.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
-	console.log(newTransaction);
+	// console.log(newTransaction);
 
 	if(newTransaction.amount < 0){
 		res.json({ note: newTransaction.note });
@@ -109,7 +120,8 @@ app.post('/transaction/broadcast', function(req, res) {
 		if(newTransaction.sender == "00"){
 			bitcoin.addTransactionToPendingTransactions(newTransaction);
 			const requestPromises = [];
-	
+			
+			//just add these transactions to all the other network nodes
 			bitcoin.networkNodes.forEach(networkNodeUrl => {
 				const requestOptions = {
 					uri: networkNodeUrl + '/transaction',
@@ -159,6 +171,7 @@ app.post('/transaction/broadcast', function(req, res) {
 });
 
 //to mine a new block
+//Ex-API
 app.post('/mine', (req, res) => {
 	var minerId = req.body.minerId;
 	
@@ -224,6 +237,7 @@ app.post('/mine', (req, res) => {
 
 
 //to receive a new block
+//Int-API
 app.post('/receive-new-block', function(req, res) {
 	const newBlock = req.body.newBlock;
 	const lastBlock = bitcoin.getLastBlock();
@@ -249,6 +263,7 @@ app.post('/receive-new-block', function(req, res) {
 
 
 // register a node and broadcast it the network
+
 app.post('/register-and-broadcast-node', function(req, res) {
 	const newNodeUrl = req.body.newNodeUrl;
 	if (bitcoin.networkNodes.indexOf(newNodeUrl) === -1) bitcoin.networkNodes.push(newNodeUrl);
@@ -264,6 +279,10 @@ app.post('/register-and-broadcast-node', function(req, res) {
 
 		regNodesPromises.push(rp(requestOptions));
 	});
+
+
+	// after the promises return the newnodes from there you perform a bulk register which adds 
+	//all the other previously present nodes to its network
 
 	Promise.all(regNodesPromises)
 	.then(data => {
@@ -283,6 +302,7 @@ app.post('/register-and-broadcast-node', function(req, res) {
 
 
 // register a node with the network
+//Int-API
 app.post('/register-node', function(req, res) {
     const newNodeUrl = req.body.newNodeUrl;
 
@@ -297,6 +317,7 @@ app.post('/register-node', function(req, res) {
 
 
 // register multiple nodes at once
+//Int-API
 app.post('/register-nodes-bulk', function(req, res) {
 	const allNetworkNodes = req.body.allNetworkNodes;
 	allNetworkNodes.forEach(networkNodeUrl => {
@@ -310,7 +331,11 @@ app.post('/register-nodes-bulk', function(req, res) {
 });
 
 
-//to check if a blockchain is valid and using the longest length policy to choose the correct chain
+//to check if a blockchain is valid and using the 
+//longest length policy to choose the correct chain
+//when a new node is added to the network we change use consensus to get it in sync
+// with the block chain network
+//Ex-API
 app.get('/consensus', function(req, res) {
 	const requestPromises = [];
 	bitcoin.networkNodes.forEach(networkNodeUrl => {
@@ -329,12 +354,15 @@ app.get('/consensus', function(req, res) {
 		let maxChainLength = currentChainLength;
 		let newLongestChain = null;
 		let newPendingTransactions = null;
+		let newUsers = [];
 
 		blockchains.forEach(blockchain => {
+
 			if (blockchain.chain.length > maxChainLength) {
 				maxChainLength = blockchain.chain.length;
 				newLongestChain = blockchain.chain;
 				newPendingTransactions = blockchain.pendingTransactions;
+				newUsers = blockchain.users;
 			};
 		});
 
@@ -348,16 +376,19 @@ app.get('/consensus', function(req, res) {
 		else {
 			bitcoin.chain = newLongestChain;
 			bitcoin.pendingTransactions = newPendingTransactions;
+			bitcoin.users = newUsers;
 			res.json({
 				note: 'This chain has been replaced.',
-				chain: bitcoin.chain
+				chain: bitcoin.chain			
 			});
 		}
+
 	});
 });
 
 
 // get block by blockHash
+//Ex-API
 app.get('/block/:blockHash', function(req, res) { 
 	const blockHash = req.params.blockHash;
 	const correctBlock = bitcoin.getBlock(blockHash);
@@ -369,6 +400,7 @@ app.get('/block/:blockHash', function(req, res) {
 
 
 // get transaction by transactionId
+//Ex-API
 app.get('/transaction/:transactionId', function(req, res) {
 	const transactionId = req.params.transactionId;
 	const transactionData = bitcoin.getTransaction(transactionId);
@@ -380,16 +412,6 @@ app.get('/transaction/:transactionId', function(req, res) {
 	});
 });
 
-
-// get address by address
-app.get('/address/:address', function(req, res) {
-	const address = req.params.address;
-	const addressData = bitcoin.getAddressData(address);
-
-    res.json({
-		addressData: addressData
-	});
-});
 
 
 app.listen(port, () => {

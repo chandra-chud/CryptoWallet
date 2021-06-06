@@ -1,0 +1,226 @@
+{
+	"info": {
+		"_postman_id": "6516f158-ca72-44ee-a3dc-fb9ae77d4280",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get the Blockchain",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/blockchain",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"blockchain"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/all-users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"all-users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create New User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/new-user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"new-user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Mine Block",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"minerId\": \"0431f5b9ff7b8463b12a47d92ab0e8a6aeffec1a9633e38bcd47193a52053e5a045894bf9c2738aa8e67f7c91bc37bf9595a08c6e1a756ddeda963d2b1ad81b483\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/mine",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"mine"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Transaction",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:3001/transaction/04124ee0c68911eba23e995026366d97",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"transaction",
+						"04124ee0c68911eba23e995026366d97"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Block",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/block/0000016a6c06522d8b2a329a3c506bb3a539eacc1c8fe2a1a2d90f254b9f2e80",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"block",
+						"0000016a6c06522d8b2a329a3c506bb3a539eacc1c8fe2a1a2d90f254b9f2e80"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register And Broadcast Node",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"newNodeUrl\":\"http://localhost:3004\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/register-and-broadcast-node",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"register-and-broadcast-node"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Transaction And Broadcast",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\":10,\n    \"sender\":\"04b6553c345fbeb599eaa2599361a5d92735e0d9134804ffe68d0128a92b36dfe9bb317fb1daeedadfc5eef323961a36cd4de5411e8e6d32a35a0bfee497aafe94\",\n    \"recipient\":\"0431f5b9ff7b8463b12a47d92ab0e8a6aeffec1a9633e38bcd47193a52053e5a045894bf9c2738aa8e67f7c91bc37bf9595a08c6e1a756ddeda963d2b1ad81b483\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/transaction/broadcast",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"transaction",
+						"broadcast"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consensus for Blockchain",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3004/consensus",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3004",
+					"path": [
+						"consensus"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

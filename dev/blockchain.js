@@ -15,11 +15,14 @@ class Blockchain {
         this.currentNodeUrl = currentUrl;
         this.networkNodes = [];
         this.users = [];
-        
+
         // the genesis block of the blockchain
+        //genesis block - first block of the chain for refernce doesnt contain 
+        //transactions
         this.createNewBlock(100, '0', '0');
     }
 
+    // Create a new block and push it into the blockchain
     createNewBlock(nonce, previousBlockHash, hash) {
         const newBlock = new Block(this.chain.length+1, Date.now(), this.pendingTransactions, nonce, hash, previousBlockHash);
         this.pendingTransactions = [];
@@ -31,7 +34,8 @@ class Blockchain {
     createNewWallet(name){
         const newWallet = new Wallet(name);
         const checkUserList = this.users.find(user => user.name === name);
-
+        
+        //return null if user already has a wallet
         if(checkUserList != null){
             return null;
         } else {
@@ -48,6 +52,8 @@ class Blockchain {
     updateBalanceOfUser (targetKey) {
         var addressTransactions = this.chain[this.chain.length - 1].transactions;
         
+        //update the balance of the user based on the last transactions
+        //to be added to the block
         let balance = 0;
         addressTransactions.forEach(transaction => {
             if (transaction.recipient === targetKey) balance += transaction.amount;
@@ -66,17 +72,22 @@ class Blockchain {
         const senderExists = this.users.find(user => user.publicKey === senderKey);
         const recipientExists = this.users.find(user => user.publicKey === recipientKey);                
 
+        // console.log(`${senderKey} ${recipientKey}`);
+
         if(senderKey == '00'){
             newTransaction = new Transaction(amount, senderKey, recipientKey);
         } else if(senderExists && recipientExists){
             const currentBalance = senderExists.balance;
 
+            //check if the user has sufficient balance
             if(amount > currentBalance){
                 newTransaction = {
                     amount: -1,
                     note: 'Insufficient Balance'
                 };
             } else {
+                //create new transaction and sign the transaction
+                //based on the senders private key
                 newTransaction = new Transaction(amount, senderKey, recipientKey);
                 const myKey = ec.keyFromPrivate(senderExists.privateKey);
                 newTransaction.signTransaction(myKey);
@@ -102,7 +113,8 @@ class Blockchain {
         return this.getLastBlock()['index'] + 1;
     } 
 
-    
+    //hash the block based on prev block and nonce to maintian
+    //integrity of the blockchain   
     hashBlock(previousBlockHash, currentBlockData, nonce) {
         const dataAsString = previousBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
         const hash = sha256(dataAsString);
@@ -152,10 +164,11 @@ class Blockchain {
         return validChain;
     };
 
-
+    // We will get the block based on a particular hash
     getBlock (blockHash) {
         let correctBlock = null;
         
+        //Find the exact block with the hash provided
         this.chain.forEach(block => {
             if (block.hash === blockHash) correctBlock = block;
         });
@@ -163,11 +176,12 @@ class Blockchain {
         return correctBlock;
     };
     
-    
+    // To get a particular transaction based on the tid    
     getTransaction (transactionId) {
         let correctTransaction = null;
         let correctBlock = null;
-    
+        
+        //To locate the correct transaction with the particular id
         this.chain.forEach(block => {
             block.transactions.forEach(transaction => {
                 if (transaction.transactionId === transactionId) {
