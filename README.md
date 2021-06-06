@@ -31,7 +31,7 @@ A digital wallet implemented in Javascript using Blockchain
 - Import the json file for postman into your Postman Desktop App this contains API preadded with body format to create the blockchain
 
 ## Application User Manual
-- Check if all node servers are running in the terminal
+Check if all node servers are running in the terminal
 - **Register Node** : Register the nodes using `/register-and-broadcast-node` endpoints by entering the local host website link in the post request
 - **Create Wallet** : Create new user wallets using `/new-user` endpoints
 - **Adding Transactions**: In the `/transaction/broadcast` endpoint enter the amount and sender,recipients public keys
